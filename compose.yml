@@ -1,0 +1,23 @@
+services:
+  user-service:
+    build:
+      context: .
+      dockerfile: services/user-service/Dockerfile
+    ports:
+      - "8001:8001"
+    env_file:
+      - services/user-service/.env
+    depends_on:
+      - db
+  
+  db:
+    image: postgres:16-alpine
+    env_file:
+      - services/user-service/.env
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:

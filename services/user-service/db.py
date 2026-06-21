@@ -1,6 +1,13 @@
 from sqlmodel import create_engine, Session
+from config import settings 
 
-engine = create_engine("sqlite:///database.db", connect_args={"check_same_thread": False})
+
+DATABASE_URL = str(settings.DATABASE_URL)
+
+engine = create_engine(
+    DATABASE_URL,
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite:/") else {}
+)
 
 def get_session():
     with Session(engine) as session:

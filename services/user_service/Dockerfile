@@ -1,18 +1,18 @@
 #-----------------------------------------
 # Stage-01: The Builder
 #-----------------------------------------
-    
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim AS builder
+ENV UV_HTTP_TIMEOUT=120
 WORKDIR /app
 
 # Copy the dependency files first for docker caching
 COPY pyproject.toml uv.lock ./
 
 # Copy the specific services files
-COPY services/user-service/pyproject.toml services/user-service/
+COPY services/user_service/pyproject.toml services/user_service/
 
 # Install dependencies for the user-service
-RUN uv sync --package user-service --frozen --no-dev
+RUN uv sync --package user_service --frozen --no-dev
 
 # Copy rest of the code
 COPY . .
@@ -30,4 +30,4 @@ COPY --from=builder /app /app
 ENV PATH="/app/.venv/bin:$PATH"
 
 # Run the FastAPI server.
-CMD ["fastapi", "run", "services/user-service/main.py", "--port", "8000", "--host", "0.0.0.0"]
+CMD ["fastapi", "run", "services/user_service/main.py", "--port", "8000", "--host", "0.0.0.0"]

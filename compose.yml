@@ -1,14 +1,35 @@
 services:
+  traefik:
+    image: traefik:v2.11
+    user: root
+    command:
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--providers.docker.endpoint=unix:///var/run/docker.sock"
+      - "--entrypoints.web.address=:80"
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+
   user-service:
     build:
       context: .
       dockerfile: services/user_service/Dockerfile
-    ports:
-      - "8000:8000"
+    # ports:
+    #   - "8001:8000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.user_service.entrypoints=web"
+      - "traefik.http.routers.user_service.rule=PathPrefix(`/users`) || PathPrefix(`/docs`)" 
+      - "traefik.http.services.user_service.loadbalancer.server.port=8000"
     env_file:
       - services/user_service/.env
     depends_on:
       - db
+      - product-service
   
   db:
     image: postgres:16-alpine
@@ -24,5 +45,9 @@ services:
       context: .
       dockerfile: services/product_service/Dockerfile
 
+
+#--------------------------------------
+# VOLUMES
+#--------------------------------------
 volumes:
   postgres_data:

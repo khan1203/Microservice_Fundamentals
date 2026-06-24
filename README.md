@@ -6,4 +6,5 @@
 | Phase 2 | SQLModel & CRUD Endpoints | ✅ |
 | Phase 3 | Docker, Compose & PostgreSQL | ✅ |
 | Phase 4 | Inter-Service Communication with gRPC | ✅ |
+| Phase 5 | Traefik as API Gateway | ✅ |
 ---

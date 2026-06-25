@@ -23,7 +23,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.user_service.entrypoints=web"
-      - "traefik.http.routers.user_service.rule=PathPrefix(`/users`) || PathPrefix(`/docs`)" 
+      - "traefik.http.routers.user_service.rule=PathPrefix(`/users`) || PathPrefix(`/users`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`)" 
       - "traefik.http.services.user_service.loadbalancer.server.port=8000"
     env_file:
       - services/user_service/.env

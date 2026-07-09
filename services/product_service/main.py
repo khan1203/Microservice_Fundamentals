@@ -12,6 +12,7 @@ class ProductService(product_pb2_grpc.ProductServiceServicer):
             name="Super Fast Laptop",
             price=1999.99
         )
+    
 def server():
     server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
     product_pb2_grpc.add_ProductServiceServicer_to_server(ProductService(),server)

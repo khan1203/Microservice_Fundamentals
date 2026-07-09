@@ -1,4 +1,21 @@
 services:
+  # RabbitMQ Service
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: user
+      RABBITMQ_DEFAULT_PASS: password
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # API Gateway
   traefik:
     image: traefik:v2.11
     user: root
@@ -14,23 +31,44 @@ services:
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
 
+  # User Service
   user-service:
     build:
       context: .
       dockerfile: services/user_service/Dockerfile
-    # ports:
-    #   - "8001:8000"
+    ports:
+      - "8001:8000"
     labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.user_service.entrypoints=web"
-      - "traefik.http.routers.user_service.rule=PathPrefix(`/users`) || PathPrefix(`/users`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`)" 
-      - "traefik.http.services.user_service.loadbalancer.server.port=8000"
+      traefik.enable: true
+      traefik.http.routers.user_service.entrypoints: web
+      traefik.http.routers.user_service.rule: PathPrefix(`/users`) || PathPrefix(`/docs`) || PathPrefix(`/openapi.json`)
+      traefik.http.services.user_service.loadbalancer.server.port: 8000
     env_file:
       - services/user_service/.env
     depends_on:
       - db
       - product-service
   
+  # Product Service
+  product-service:
+    build:
+      context: .
+      dockerfile: services/product_service/Dockerfile
+    ports:
+      - "8002:8000"
+
+  # Order Service
+  order-service:
+    build:
+      context: .
+      dockerfile: services/order-service/Dockerfile
+    ports:
+      - "8003:8000" # Exposing directly for testing today
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+  
+  # Database Service
   db:
     image: postgres:16-alpine
     env_file:
@@ -39,12 +77,6 @@ services:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
-  product-service:
-    build:
-      context: .
-      dockerfile: services/product_service/Dockerfile
-
 
 #--------------------------------------
 # VOLUMES

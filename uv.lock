@@ -9,6 +9,7 @@ resolution-markers = [
 
 [manifest]
 members = [
+    "inventory-service",
     "microservice-fundamentals",
     "order-service",
     "product-service",
@@ -562,6 +563,21 @@ wheels = [
 ]
 
 [[package]]
+name = "inventory-service"
+version = "0.1.0"
+source = { virtual = "services/inventory-service" }
+dependencies = [
+    { name = "aio-pika" },
+    { name = "fastapi", extra = ["standard"] },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "aio-pika", specifier = ">=9.6.2" },
+    { name = "fastapi", extras = ["standard"], specifier = ">=0.138.0" },
+]
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -662,6 +678,7 @@ name = "microservice-fundamentals"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
+    { name = "aio-pika" },
     { name = "bcrypt" },
     { name = "fastapi", extra = ["standard"] },
     { name = "passlib", extra = ["bcrypt"] },
@@ -670,6 +687,7 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "aio-pika", specifier = ">=9.6.2" },
     { name = "bcrypt", specifier = ">=5.0.0" },
     { name = "fastapi", extras = ["standard"], specifier = ">=0.138.0" },
     { name = "passlib", extras = ["bcrypt"], specifier = ">=1.7.4" },

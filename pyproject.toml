@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "aio-pika>=9.6.2",
     "bcrypt>=5.0.0",
     "fastapi[standard]>=0.138.0",
     "passlib[bcrypt]>=1.7.4",
@@ -17,4 +18,5 @@ members = [
     "services/order_service",
     "services/product_service",
     "services/order-service",
+    "services/inventory-service",
 ]

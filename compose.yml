@@ -68,6 +68,17 @@ services:
       rabbitmq:
         condition: service_healthy
   
+  # Inventory Service
+  inventory-service:
+    build:
+      context: .
+      dockerfile: services/inventory-service/Dockerfile
+    ports:
+      - "8004:8000" # Exposing for easy testing
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
   # Database Service
   db:
     image: postgres:16-alpine

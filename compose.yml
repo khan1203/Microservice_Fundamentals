@@ -1,5 +1,13 @@
 services:
-  # RabbitMQ Service
+  # Jaeger Service for Tracing
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    container_name: jaeger
+    ports:
+      - "16686:16686" # The Web UI
+      - "4317:4317"   # OTLP gRPC receiver port
+  
+  # RabbitMQ Service for Dead Letter Queue (DLQ) and messaging
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: rabbitmq
@@ -14,8 +22,10 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
+    depends_on:
+      - jaeger
 
-  # API Gateway
+  # API Gateway service for routing requests to microservices
   traefik:
     image: traefik:v2.11
     user: root

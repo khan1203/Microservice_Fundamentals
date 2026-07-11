@@ -9,29 +9,57 @@ inventory_db = {
 }
 
 async def process_message(message: aio_pika.abc.AbstractIncomingMessage):
-    async with message.process(): # This automatically ACKs the message if no errors occur
+    try: 
+        # 1. Decode the message body
         event_data = json.loads(message.body.decode())
         print(f"📦 Received Event: {event_data}")
        
         product_id = event_data.get("product_id")
        
-        # Simulate business logic: Reduce stock
+        # SIMULATE A FATAL ERROR (only for testing purposes)
+        if product_id == 999:
+            print("❌ Fatal error: Simulated crash! Rejecting message.")
+            # Reject the message and DO NOT requeue it
+            # This triggers the Dead Letter Exchange (DLX)
+            await message.reject(requeue=False)    
+            return 
+        
+        # 2. Normal business logic
         if product_id in inventory_db and inventory_db[product_id]["stock"] > 0:
             inventory_db[product_id]["stock"] -= 1
             print(f"✅ Stock reduced! Remaining stock for product {product_id}: {inventory_db[product_id]['stock']}")
         else:
             print(f"❌ Out of stock or invalid product: {product_id}")
 
+        # 3. Manually acknowledge the message was processed successfully
+        await message.ack()
+
+    except Exception as e:
+        print(f"❌ Error processing message: {e}")
+
+        # 4. If any Python error occurs, safely dead-letter the message
+        await message.reject(requeue=False)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # 1. Connect to RabbitMQ
+    # 1. Connect to RabbitMQ and create a channel
     connection = await aio_pika.connect_robust("amqp://user:password@rabbitmq:5672/")
     channel = await connection.channel()
    
-    # 2. Ensure the queue exists
-    queue = await channel.declare_queue("order_events", durable=True)
+    # 2. Declare the Dead Letter Exchange (DLX) and Dead Letter Queue (DLQ)
+    dlx = await channel.declare_exchange("dlx", aio_pika.ExchangeType.DIRECT)
+    dlq = await channel.declare_queue("order_events_dlq", durable=True)
+    await dlq.bind(dlx, routing_key="order_events")
+    
+    # 3. Declare the main queue and tell it to route failures to the DLX
+    arguments = {
+        "x-dead-letter-exchange": "dlx",
+        "x-dead-letter-routing-key": "order_events",
+    }
+    queue = await channel.declare_queue("order_events", durable=True, arguments=arguments)
    
-    # 3. Start listening in the background
+    # 4. Consume messages from the queue with our processing function in the background
     await queue.consume(process_message)
     print("🎧 Inventory Service is now listening for order events...")
    
@@ -39,9 +67,10 @@ async def lifespan(app: FastAPI):
    
     await connection.close()
 
+# Initialize FastAPI app with lifespan context
 app = FastAPI(lifespan=lifespan)
 
-# A simple endpoint to check current stock
+# ------------------------- ENDPOINTS -------------------------
 @app.get("/inventory/{product_id}")
 def get_stock(product_id: int):
     return inventory_db.get(product_id, {"error": "Product not found"})

@@ -1,7 +1,7 @@
 ## ✅ Learning Progress
 
-| Phase   | Topic                                             | Status |
-|-------  |-------                                            |--------|
+| Phase   |                      Topic                        | Status |
+| ------- |                     -------                       |--------|
 | Phase 1 | Professional Microservices Workspace              |   ✅   |
 | Phase 2 | SQLModel & CRUD Endpoints                         |   ✅   |
 | Phase 3 | Docker, Compose & PostgreSQL                      |   ✅   |
@@ -10,4 +10,5 @@
 | Phase 6 | JWT Authentication with bcrypt                    |   ✅   |
 | Phase 7 | Messege Broker integration: RabbitMQ              |   ✅   |
 | Phase 8 | Event-Driven Architecture with RabbitMQ           |   ✅   |
+| Phase 9 | Dead Letter Queues (DLQ)                          |   ✅   |
 ---

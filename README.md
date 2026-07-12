@@ -12,6 +12,7 @@
 | Phase 08 | Event-Driven Architecture with RabbitMQ           |   ✅   |
 | Phase 09 | Dead Letter Queues (DLQ)                          |   ✅   |
 | Phase 10 | Distributed Tracing with OpenTelemetry & Jaeger   |   ✅   |
+| Phase 11 | Centralized Logging with Grafana, Loki & Promtail |   ✅   |
 
 
 ---

@@ -1,8 +1,10 @@
+# version: '3.8'
+
 services:
   # Jaeger Service for Tracing
   jaeger:
     image: jaegertracing/all-in-one:latest
-    container_name: jaeger
+    container_name: jaeger_microservices
     ports:
       - "16686:16686" # The Web UI
       - "4317:4317"   # OTLP gRPC receiver port
@@ -22,8 +24,6 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-    depends_on:
-      - jaeger
 
   # API Gateway service for routing requests to microservices
   traefik:
@@ -58,6 +58,7 @@ services:
     depends_on:
       - db
       - product-service
+      - jaeger
   
   # Product Service
   product-service:
@@ -98,6 +99,36 @@ services:
       - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+
+  # Grafana-Loki Service for centralized logging
+  loki:
+    image: grafana/loki:latest
+    container_name: loki_microservices
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/local-config.yaml
+
+  # Grafana-Promtail Service for log shipping
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail_microservices
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+
+  # Grafana Service for visualization
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana_microservices
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin                # Default password
+    depends_on:
+      - loki
 
 #--------------------------------------
 # VOLUMES

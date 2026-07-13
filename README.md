@@ -13,6 +13,7 @@
 | Phase 09 | Dead Letter Queues (DLQ)                          |   ✅   |
 | Phase 10 | Distributed Tracing with OpenTelemetry & Jaeger   |   ✅   |
 | Phase 11 | Centralized Logging with Grafana, Loki & Promtail |   ✅   |
+| Phase 12 | Service Healthchecks: Liveness & Readiness        |   ✅   |
 
 
 ---

@@ -1,3 +1,4 @@
+import os
 import json
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
@@ -6,13 +7,15 @@ import asyncio
 
 # Global connection variable
 rabbitmq_connection = None
+RABBITMQ_USER=os.getenv("RABBITMQ_USER")
+RABBITMQ_PASSWORD=os.getenv("RABBITMQ_PASSWORD")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # 1. Connect to RabbitMQ with retry
     for i in range(5):
         try:
-            rabbitmq_connection = await aio_pika.connect_robust("amqp://user:password@rabbitmq:5672/")
+            rabbitmq_connection = await aio_pika.connect_robust("amqp://${RABBITMQ_USER}:${RABBITMQ_PASSWORD}@rabbitmq:5672/")
             channel = await rabbitmq_connection.channel()
             break
         except Exception as e:

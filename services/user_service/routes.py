@@ -1,5 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from fastapi import APIRouter, Depends, HTTPException, status, Response
+from sqlmodel import Session, select, text
 from typing import List
 import grpc
 import product_pb2
@@ -75,4 +75,20 @@ def get_user_purchase(
         "source": "gRPC"
     }
 
+@router.get("/health/liveness", tags=["Health"])
+def liveness_probe():
+    """Checks if the FastAPI server is running."""
+    return {"status": "alive"}
+
+@router.get("/health/readiness", tags=["Health"])
+def readiness_probe(response: Response, session: Session = Depends(get_session)):
+    """Checks if the service is ready to handle traffic (e.g., DB connected)."""
+    try:
+        # Execute a simple ping to the database
+        session.exec(text("SELECT 1"))
+        return {"status": "ready"}
+    except Exception as e:
+        # If the DB is unreachable, return a 503 error
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+        return {"status": "unhealthy", "detail": str(e)}
 
